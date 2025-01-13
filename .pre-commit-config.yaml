@@ -1,0 +1,64 @@
+repos:
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v3.4.0
+    hooks:
+      - id: check-yaml
+      - id: end-of-file-fixer
+      - id: debug-statements
+      - id: trailing-whitespace
+      - id: requirements-txt-fixer
+      - id: check-merge-conflict
+  - repo: https://github.com/asottile/pyupgrade
+    rev: v3.3.1
+    hooks:
+      - id: pyupgrade
+        args:
+          ["--py311-plus"]
+  - repo: https://github.com/psf/black
+    rev: 22.6.0
+    hooks:
+      - id: black
+  - repo: https://github.com/econchick/interrogate
+    rev: 1.3.2
+    hooks:
+      - id: interrogate
+        args: [-v, -I]
+  - repo: https://github.com/PyCQA/isort
+    rev: 5.7.0
+    hooks:
+      - id: isort
+        args: ["--profile", "black", "--filter-files"]
+  - repo: https://github.com/pre-commit/mirrors-prettier
+    rev: v2.2.1
+    hooks:
+      - id: prettier
+        name: "Format with prettier"
+        types: [yaml, json, markdown]
+  - repo: https://github.com/myint/autoflake
+    rev: v1.4
+    hooks:
+      - id: autoflake
+        name: Remove unused imports and unused variables
+        args:
+          [
+            "--in-place",
+            "--remove-unused-variables",
+            "--remove-all-unused-imports",
+          ]
+  - repo: https://github.com/Lucas-C/pre-commit-hooks-bandit
+    rev: v1.0.4
+    hooks:
+      - id: python-bandit-vulnerability-check
+        name: Python code vulnerabilities checker
+        args: [-l, --recursive, -x, tests]
+        files: .py$
+  - repo: local
+    hooks:
+      - id: pytest
+        name: Run tests
+        entry: pytest
+        args: ["-v"]
+        language: system
+        stages: [push]
+        pass_filenames: false
+        always_run: true

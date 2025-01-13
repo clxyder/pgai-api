@@ -1,0 +1,35 @@
+version: "3.7"
+
+services:
+  db_service:
+    container_name: db_container
+    env_file:
+      - .env
+    image: postgres:14.5
+    restart: always
+    volumes:
+      - db_data:/var/lib/postgresql/data
+    ports:
+      - "${POSTGRES_PORT}:${POSTGRES_PORT}"
+    command: -p ${POSTGRES_PORT}
+  fastapi_service:
+    container_name: fastapi_container
+    env_file:
+      - .env
+    restart: always
+    build:
+      context: ./
+      dockerfile: Dockerfile
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./:/usr/src/app
+    depends_on:
+      - db_service
+    environment:
+      - POSTGRES_HOST=db_container
+    stdin_open: true
+    tty: true
+
+volumes:
+  db_data:
