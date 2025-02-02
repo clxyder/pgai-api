@@ -4,6 +4,9 @@ ENV LANG=C.UTF-8
 
 ENV APP_DIR=/usr/src/app
 
+RUN apt-get update -y \
+    && apt-get install libpq-dev gcc -y
+
 # Create a directory for application
 RUN mkdir -p ${APP_DIR}
 

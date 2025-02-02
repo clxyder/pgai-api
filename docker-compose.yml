@@ -1,17 +1,30 @@
-version: "3.7"
-
 services:
   db_service:
     container_name: db_container
     env_file:
       - .env
-    image: postgres:14.5
+    image: timescale/timescaledb-ha:pg17
     restart: always
     volumes:
       - db_data:/var/lib/postgresql/data
     ports:
       - "${POSTGRES_PORT}:${POSTGRES_PORT}"
-    command: -p ${POSTGRES_PORT}
+    command: [ "-p", "${POSTGRES_PORT}", "-c", "ai.ollama_host=http://ollama:11434" ]
+    expose:
+      - "${POSTGRES_PORT}"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -p ${POSTGRES_PORT}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+  vectorizer_worker_service:
+    image: timescale/pgai-vectorizer-worker:latest
+    env_file:
+      - .env
+    environment:
+      PGAI_VECTORIZER_WORKER_DB_URL: postgres://postgres:postgres@db_container:5432/postgres
+      OLLAMA_HOST: http://ollama_container:11434
+    command: [ "--poll-interval", "5s", "--log-level", "DEBUG" ]
   fastapi_service:
     container_name: fastapi_container
     env_file:
@@ -25,11 +38,20 @@ services:
     volumes:
       - ./:/usr/src/app
     depends_on:
-      - db_service
+      db_service:
+        condition: service_healthy
     environment:
       - POSTGRES_HOST=db_container
     stdin_open: true
     tty: true
+  ollama_service:
+    container_name: ollama_container
+    image: ollama/ollama:latest
+    ports:
+      - "11434:11434"
+    volumes:
+      - ollama_data:/root/.ollama
 
 volumes:
   db_data:
+  ollama_data:
