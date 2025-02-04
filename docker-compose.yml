@@ -7,6 +7,7 @@ services:
     restart: always
     volumes:
       - db_data:/var/lib/postgresql/data
+      - ./.docker/init-db:/docker-entrypoint-initdb.d
     ports:
       - "${POSTGRES_PORT}:${POSTGRES_PORT}"
     command: [ "-p", "${POSTGRES_PORT}", "-c", "ai.ollama_host=http://ollama_container:11434" ]
