@@ -1,9 +1,9 @@
 import logging
 
 from fastapi import HTTPException
+from fastapi.exceptions import RequestValidationError
 from sqlalchemy import select
 from sqlalchemy.exc import SQLAlchemyError
-from fastapi.exceptions import RequestValidationError
 
 from app.common.models import User
 from app.v1.schema import UserSchema

@@ -1,7 +1,7 @@
 from functools import lru_cache
 from logging.config import dictConfig
 from pathlib import Path
-from typing import Any, Dict, Union
+from typing import Any
 
 from decouple import config
 from pydantic import Field, PostgresDsn, field_validator
@@ -62,10 +62,10 @@ class Config(BaseSettings):
     POSTGRES_HOST: str = Field(default="", json_schema_extra=dict(env="POSTGRES_HOST"))
     POSTGRES_PORT: str = Field(default="", json_schema_extra=dict(env="POSTGRES_PORT"))
     POSTGRES_DB: str = Field(default="", json_schema_extra=dict(env="POSTGRES_DB"))
-    DATABASE_URL: Union[str, None] = None
+    DATABASE_URL: str | None = None
 
     @field_validator("DATABASE_URL", mode="before")
-    def build_db_connection(cls, v: Union[str, None], values: Dict[str, Any]) -> Any:
+    def build_db_connection(cls, v: str | None, values: dict[str, Any]) -> Any:
         if v:
             return v
 
@@ -85,7 +85,7 @@ class Config(BaseSettings):
 
 class TestingConfig(Config):
     @field_validator("DATABASE_URL")
-    def build_db_connection(cls, v: Union[str, None]) -> Any:
+    def build_db_connection(cls, v: str | None) -> Any:
         return "sqlite+aiosqlite://"
 
 

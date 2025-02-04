@@ -25,3 +25,6 @@ docker-up:
 .PHONY: docker-db-upgrade
 docker-db-upgrade:
 	docker-compose exec fastapi_service alembic upgrade head;
+
+.PHONY: docker-run
+docker-run: docker-db-upgrade docker-up
