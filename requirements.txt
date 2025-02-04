@@ -1,10 +1,10 @@
 aiosqlite==0.19.0
-alembic==1.11.1
+alembic==1.14.0
 asyncpg==0.30.0
 fastapi[all]==0.100.0
 gunicorn==20.1.0
 ollama==0.4.7
-# pgai[sqlalchemy]==0.6.0  # not working for now
+pgai[sqlalchemy]==0.6.0
 python-decouple==3.6
 rich==13.4.2
 sqlalchemy-utils==0.41.1
