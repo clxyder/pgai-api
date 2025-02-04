@@ -32,6 +32,13 @@ target_metadata = models.Base.metadata
 # ... etc.
 
 
+# https://github.com/timescale/pgai/blob/main/docs/python-integration.md#working-with-alembic
+def include_object(object, name, type_, reflected, compare_to):
+    return type_ != "table" or name not in target_metadata.info.get(
+        "pgai_managed_tables", set()
+    )
+
+
 def run_migrations_offline() -> None:
     """Run migrations in 'offline' mode.
 
@@ -50,6 +57,7 @@ def run_migrations_offline() -> None:
         target_metadata=target_metadata,
         literal_binds=True,
         dialect_opts={"paramstyle": "named"},
+        include_object=include_object,
     )
 
     with context.begin_transaction():
@@ -57,7 +65,11 @@ def run_migrations_offline() -> None:
 
 
 def do_run_migrations(connection: Connection) -> None:
-    context.configure(connection=connection, target_metadata=target_metadata)
+    context.configure(
+        connection=connection,
+        target_metadata=target_metadata,
+        include_object=include_object,
+    )
 
     with context.begin_transaction():
         context.run_migrations()
