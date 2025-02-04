@@ -9,7 +9,7 @@ services:
       - db_data:/var/lib/postgresql/data
     ports:
       - "${POSTGRES_PORT}:${POSTGRES_PORT}"
-    command: [ "-p", "${POSTGRES_PORT}", "-c", "ai.ollama_host=http://ollama:11434" ]
+    command: [ "-p", "${POSTGRES_PORT}", "-c", "ai.ollama_host=http://ollama_container:11434" ]
     expose:
       - "${POSTGRES_PORT}"
     healthcheck:
@@ -23,7 +23,7 @@ services:
     env_file:
       - .env
     environment:
-      PGAI_VECTORIZER_WORKER_DB_URL: postgres://postgres:postgres@db_container:5432/postgres
+      PGAI_VECTORIZER_WORKER_DB_URL: postgres://${POSTGRES_USER}:${POSTGRES_PASSWORD}@db_container:${POSTGRES_PORT}/${POSTGRES_DB}
       OLLAMA_HOST: http://ollama_container:11434
     command: [ "--poll-interval", "5s", "--log-level", "DEBUG" ]
   fastapi_service:
