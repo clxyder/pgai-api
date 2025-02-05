@@ -52,7 +52,9 @@ services:
     tty: true
   ollama_service:
     container_name: ollama_container
-    image: ollama/ollama:latest
+    # preload model - https://github.com/ollama/ollama/issues/7046#issuecomment-2383792234
+    build:
+      context: ./.docker/ollama
     ports:
       - "11434:11434"
     volumes:
