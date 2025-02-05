@@ -62,7 +62,13 @@ class Config(BaseSettings):
     POSTGRES_HOST: str = Field(default="", json_schema_extra=dict(env="POSTGRES_HOST"))
     POSTGRES_PORT: str = Field(default="", json_schema_extra=dict(env="POSTGRES_PORT"))
     POSTGRES_DB: str = Field(default="", json_schema_extra=dict(env="POSTGRES_DB"))
+    OLLAMA_DOMAIN: str = Field(
+        default="localhost", json_schema_extra=dict(env="OLLAMA_DOMAIN")
+    )
+    OLLAMA_PORT: str = Field(default="11434", json_schema_extra=dict(env="OLLAMA_PORT"))
+
     DATABASE_URL: str | None = None
+    OLLAMA_HOST: str | None = None
 
     @field_validator("DATABASE_URL", mode="before")
     def build_db_connection(cls, v: str | None, values: dict[str, Any]) -> Any:
@@ -79,6 +85,13 @@ class Config(BaseSettings):
                 path=f"{values.data.get('POSTGRES_DB') or ''}",
             )
         )
+
+    @field_validator("OLLAMA_HOST", mode="before")
+    def build_ollama_host(cls, v: str | None, values: dict[str, Any]) -> Any:
+        if v:
+            return v
+
+        return f"http://{values.data.get('OLLAMA_DOMAIN')}:{values.data.get('OLLAMA_PORT')}"
 
     model_config = SettingsConfigDict(env_file=".env", extra="ignore")
 
