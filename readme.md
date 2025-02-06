@@ -4,7 +4,7 @@ API to explore Generative AI, prompts and Large Language Models.
 
 ## Requirements
 
-- Python 3.13
+- Python 3.12
 - Fastapi
 - Pytest
 - Docker
