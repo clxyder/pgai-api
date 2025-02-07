@@ -11,7 +11,7 @@
       "module": "uvicorn",
       "args": ["app:app", "--reload"],
       "jinja": true,
-      "justMyCode": true
+      "justMyCode": false
     }
   ]
 }

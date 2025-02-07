@@ -66,6 +66,9 @@ class Config(BaseSettings):
         default="localhost", json_schema_extra=dict(env="OLLAMA_DOMAIN")
     )
     OLLAMA_PORT: str = Field(default="11434", json_schema_extra=dict(env="OLLAMA_PORT"))
+    OLLAMA_LLM_MODEL: str = Field(
+        default="", json_schema_extra=dict(env="OLLAMA_LLM_MODEL")
+    )
 
     DATABASE_URL: str | None = None
     OLLAMA_HOST: str | None = None

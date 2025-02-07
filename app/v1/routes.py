@@ -1,11 +1,13 @@
 import logging
 
+import ollama
 from fastapi import APIRouter, Depends
 
 from app.common.database import get_session
 from app.common.dependencies import is_valid
 from app.v1.logic import create_user, get_all_users, get_user
-from app.v1.schema import Response, UserSchema
+from app.v1.schema import MessageSchema, Response, UserSchema
+from config import CONFIG
 
 logger = logging.getLogger(__name__)
 
@@ -49,3 +51,15 @@ async def create_user_handler(user_payload: UserSchema, session=Depends(get_sess
     logger.info("creating user...")
     user = await create_user(session, user_payload)
     return {"user": user.uuid}
+
+
+@router.post("/chat")
+async def make_chat(payload: MessageSchema):
+    logger.info("calling model: %s", CONFIG.OLLAMA_LLM_MODEL)
+
+    chat_response: ollama.ChatResponse = ollama.chat(
+        model=CONFIG.OLLAMA_LLM_MODEL,
+        messages=[ollama.Message(role="user", content=payload.message)],
+    )
+
+    return {"response": chat_response.message.content}

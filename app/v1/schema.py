@@ -9,3 +9,9 @@ class Response(BaseModel):
 
 class UserSchema(BaseModel):
     name: str = Field(..., json_schema_extra=(dict(description="name", example="name")))
+
+
+class MessageSchema(BaseModel):
+    message: str = Field(
+        ..., json_schema_extra=(dict(description="message", example="message"))
+    )
