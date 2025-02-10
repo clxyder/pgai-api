@@ -55,10 +55,10 @@ async def create_user_handler(user_payload: UserSchema, session=Depends(get_sess
 
 @router.post("/chat")
 async def make_chat(payload: MessageSchema):
-    logger.info("calling model: %s", CONFIG.OLLAMA_LLM_MODEL)
+    logger.info("calling model: %s", CONFIG.OLLAMA_GENERATION_MODEL)
 
     chat_response: ollama.ChatResponse = ollama.chat(
-        model=CONFIG.OLLAMA_LLM_MODEL,
+        model=CONFIG.OLLAMA_GENERATION_MODEL,
         messages=[ollama.Message(role="user", content=payload.message)],
     )
 

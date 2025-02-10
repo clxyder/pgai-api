@@ -77,7 +77,7 @@ services:
       ollama_service:
         condition: service_healthy
     entrypoint: ["/bin/bash","-c"]
-    command: ["ollama pull ${OLLAMA_LLM_MODEL}"]
+    command: ["ollama pull ${OLLAMA_GENERATION_MODEL} && ollama pull ${OLLAMA_EMBEDDING_MODEL}"]
     environment:
       - OLLAMA_HOST=http://ollama_container:11434
     volumes:
