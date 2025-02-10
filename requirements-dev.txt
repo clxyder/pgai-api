@@ -1,7 +1,6 @@
 -r requirements.txt
-black==22.6.0
+-r requirements-test.txt
 mypy==0.971
 pre-commit==4.1.0
-pytest==7.1.2
-pytest-asyncio==0.21.1
+ruff==0.9.5
 wemake-python-styleguide==0.16.1

@@ -1,6 +1,6 @@
 # Gen AI LLM API
 
-API to explore Generative AI, prompts and Large Language Models.
+API to explore Generative AI, Retrieval Augmented Generation (RAG) and Large Language Models.
 
 ## Requirements
 
