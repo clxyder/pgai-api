@@ -6,6 +6,7 @@ from fastapi import APIRouter, Depends
 from app.common.database import get_session
 from app.common.dependencies import is_valid
 from app.v1.logic import create_page_content, create_user, get_all_users, get_user
+from app.v1.rag_service import retrieve_embeddings_for_page_query
 from app.v1.schema import MessageSchema, PageSchema, Response, UserSchema
 from config import CONFIG
 
@@ -66,8 +67,11 @@ async def create_page_handler(page_payload: PageSchema, session=Depends(get_sess
 
 
 @router.post("/chat")
-async def make_chat(payload: MessageSchema):
+async def make_chat(payload: MessageSchema, session=Depends(get_session)):
     logger.info("calling model: %s", CONFIG.OLLAMA_GENERATION_MODEL)
+
+    similar_posts = await retrieve_embeddings_for_page_query(session, payload.message)
+    logger.info("similar posts: %s", similar_posts)
 
     chat_response: ollama.ChatResponse = ollama.chat(
         model=CONFIG.OLLAMA_GENERATION_MODEL,

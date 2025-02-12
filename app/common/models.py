@@ -18,4 +18,6 @@ class Page(BaseDbModel):
     content: Mapped[str]
 
     # Add vector embeddings for the content field
-    content_embeddings = vectorizer_relationship(dimensions=768)
+    content_embeddings = vectorizer_relationship(
+        dimensions=768, target_table="pages_embeddings"
+    )
