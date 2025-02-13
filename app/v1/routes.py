@@ -6,7 +6,7 @@ from fastapi import APIRouter, Depends
 from app.common.database import get_session
 from app.common.dependencies import is_valid
 from app.v1.logic import create_page_content, create_user, get_all_users, get_user
-from app.v1.rag_service import retrieve_embeddings_for_page_query
+from app.common.rag import render_from_template, retrieve_embeddings_for_page_query
 from app.v1.schema import MessageSchema, PageSchema, Response, UserSchema
 from config import CONFIG
 
@@ -75,14 +75,14 @@ async def make_chat(payload: MessageSchema, session=Depends(get_session)):
 
     retrieved_text = "\n".join([post.chunk for post in similar_posts])
 
+    ctx = {"question": payload.message, "retrieved_text": retrieved_text}
+
     chat_response: ollama.ChatResponse = ollama.chat(
         model=CONFIG.OLLAMA_GENERATION_MODEL,
         messages=[
             ollama.Message(
                 role="user",
-                content=f"User question: \n{payload.message} - "
-                f"Answer that question using the following text as a resource and only use this text and nothing else. Give a short answer. No hallucinations. "
-                f"If provided content doesn't help, don't assume and say so. Provided content: {retrieved_text}",
+                content=render_from_template("page_prompt.j2", ctx),
             ),
         ],
     )

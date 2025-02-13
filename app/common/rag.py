@@ -1,7 +1,8 @@
+from jinja2 import Environment, FileSystemLoader
 from sqlalchemy import func, select
-from config import CONFIG
 
 from app.common.models import Page
+from config import CONFIG, PROMPT_TEMPLATES_DIR
 
 
 async def retrieve_embeddings_for_page_query(
@@ -19,3 +20,10 @@ async def retrieve_embeddings_for_page_query(
     )
     results = await session.execute(stmt)
     return results.scalars().all()
+
+
+def render_from_template(template_file: str, context) -> str:
+    template_path = str(PROMPT_TEMPLATES_DIR / template_file)
+    env = Environment(loader=FileSystemLoader("/"), autoescape=True)
+    template = env.get_template(template_path)
+    return template.render(context)

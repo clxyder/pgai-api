@@ -7,10 +7,11 @@ from decouple import config
 from pydantic import Field, PostgresDsn, field_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
-BASEDIR = Path.cwd()
+BASE_DIR = Path.cwd()
 
 LOG_LEVEL = config("LOG_LEVEL", default="debug").upper()
-LOG_DIR = BASEDIR / "logs"
+LOG_DIR = BASE_DIR / "logs"
+PROMPT_TEMPLATES_DIR = BASE_DIR / "app/common/prompt_templates"
 
 
 dictConfig(
