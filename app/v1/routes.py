@@ -73,9 +73,18 @@ async def make_chat(payload: MessageSchema, session=Depends(get_session)):
     similar_posts = await retrieve_embeddings_for_page_query(session, payload.message)
     logger.info("similar posts: %s", similar_posts)
 
+    retrieved_text = "\n".join([post.chunk for post in similar_posts])
+
     chat_response: ollama.ChatResponse = ollama.chat(
         model=CONFIG.OLLAMA_GENERATION_MODEL,
-        messages=[ollama.Message(role="user", content=payload.message)],
+        messages=[
+            ollama.Message(
+                role="user",
+                content=f"User question: \n{payload.message} - "
+                f"Answer that question using the following text as a resource and only use this text and nothing else. Give a short answer. No hallucinations. "
+                f"If provided content doesn't help, don't assume and say so. Provided content: {retrieved_text}",
+            ),
+        ],
     )
 
     return {"response": chat_response.message.content}
