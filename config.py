@@ -114,10 +114,4 @@ def get_config():
     return Config()
 
 
-@lru_cache
-def get_testing_config():
-    return TestingConfig()
-
-
 CONFIG = get_config()
-TESTING_CONFIG = get_testing_config()
