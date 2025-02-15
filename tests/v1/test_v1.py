@@ -6,13 +6,12 @@ from app.common.database import get_session
 from app.common.dependencies import is_valid
 from app.v1.logic import create_user, get_all_users
 from app.v1.schema import UserSchema
-from tests.utilities import get_test_session
 
 V1_ENDPOINT = "/v1"
 
 
 @pytest.fixture
-def dependency_overrides(application):
+def dependency_overrides(application, get_test_session):
     application.dependency_overrides[is_valid] = lambda: None
     application.dependency_overrides[get_session] = get_test_session
     yield application.dependency_overrides
@@ -25,7 +24,7 @@ async def test_get_users(client, test_session):
     user_schema = UserSchema(name="testuser")
     user = await create_user(test_session, user_schema)
 
-    response = client.get(f"{V1_ENDPOINT}/users")
+    response = await client.get(f"{V1_ENDPOINT}/users")
 
     assert response.status_code == HTTPStatus.OK
     assert response.json()["users"]
@@ -39,7 +38,7 @@ async def test_get_user(client, test_session):
     user_schema = UserSchema(name="testuser")
     user = await create_user(test_session, user_schema)
 
-    response = client.get(f"{V1_ENDPOINT}/user/{user.uuid}")
+    response = await client.get(f"{V1_ENDPOINT}/user/{user.uuid}")
 
     assert response.status_code == HTTPStatus.OK
     assert response.json()["user"]
@@ -52,7 +51,7 @@ async def test_get_user(client, test_session):
 async def test_create_user(client, test_session):
     payload = {"name": "testuser"}
 
-    response = client.post(f"{V1_ENDPOINT}/users", json=payload)
+    response = await client.post(f"{V1_ENDPOINT}/users", json=payload)
 
     users = await get_all_users(test_session)
 

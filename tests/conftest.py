@@ -1,8 +1,8 @@
 from collections.abc import Generator
 
+import httpx
 import pytest
 import pytest_asyncio
-from fastapi.testclient import TestClient
 from sqlalchemy import text
 from sqlalchemy.ext.asyncio import async_sessionmaker, create_async_engine
 from testcontainers.postgres import PostgresContainer
@@ -11,7 +11,7 @@ from app import create_app
 from app.common.database import Base
 
 
-@pytest.fixture
+@pytest.fixture(scope="session")
 def postgres_container() -> Generator[PostgresContainer, None, None]:
     with PostgresContainer("timescale/timescaledb-ha:pg17") as postgres:
         yield postgres
@@ -46,17 +46,18 @@ async def fixture_setup_db(test_engine):
     return inner
 
 
-@pytest.fixture(name="client")
-def fixture_client(application):
-    """Fixture for HTTP test client
+@pytest_asyncio.fixture(name="client")
+async def fixture_client(application):
+    """Fixture for HTTP test client using httpx.AsyncClient
 
     Arguments:
         application -- Application context
 
     Returns:
-        client -- HTTP client
+        client -- HTTP async client
     """
-    return TestClient(application)
+    async with httpx.AsyncClient(app=application, base_url="http://test") as client:
+        yield client
 
 
 @pytest_asyncio.fixture(name="test_session")
