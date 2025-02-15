@@ -1,8 +1,8 @@
 from collections.abc import Generator
 
-import httpx
 import pytest
 import pytest_asyncio
+from httpx import ASGITransport, AsyncClient
 from sqlalchemy import text
 from sqlalchemy.ext.asyncio import async_sessionmaker, create_async_engine
 from testcontainers.postgres import PostgresContainer
@@ -56,7 +56,9 @@ async def fixture_client(application):
     Returns:
         client -- HTTP async client
     """
-    async with httpx.AsyncClient(app=application, base_url="http://test") as client:
+    async with AsyncClient(
+        transport=ASGITransport(app=application), base_url="http://test"
+    ) as client:
         yield client
 
 
