@@ -9,6 +9,7 @@ from testcontainers.postgres import PostgresContainer
 
 from app import create_app
 from app.common.database import Base
+from tests.factories import UserFactory
 
 
 @pytest.fixture(scope="session")
@@ -78,3 +79,17 @@ async def fixture_get_test_session(test_session):
         return test_session
 
     return inner
+
+
+@pytest.fixture(name="base_factory")
+def fixture_base_factory(test_session):
+    def _factory(factory_class):
+        factory_class._meta.sqlalchemy_session = test_session
+        return factory_class
+
+    yield _factory
+
+
+@pytest_asyncio.fixture(name="user_factory")
+async def fixture_user_factory(base_factory):
+    return base_factory(UserFactory)

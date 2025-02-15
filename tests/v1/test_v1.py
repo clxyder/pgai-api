@@ -20,9 +20,8 @@ def dependency_overrides(application, get_test_session):
 
 @pytest.mark.usefixtures("dependency_overrides")
 @pytest.mark.asyncio
-async def test_get_users(client, test_session):
-    user_schema = UserSchema(name="testuser")
-    user = await create_user(test_session, user_schema)
+async def test_get_users(client, user_factory):
+    user = await user_factory(name="testuser")
 
     response = await client.get(f"{V1_ENDPOINT}/users")
 

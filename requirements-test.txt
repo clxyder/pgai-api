@@ -1,4 +1,5 @@
 -r requirements.txt
+factory-boy==3.3.3
 pytest==7.1.2
 pytest-asyncio==0.21.1
 testcontainers-postgres==0.0.1rc1
