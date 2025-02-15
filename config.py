@@ -103,12 +103,6 @@ class Config(BaseSettings):
     model_config = SettingsConfigDict(env_file=".env", extra="ignore")
 
 
-class TestingConfig(Config):
-    @field_validator("DATABASE_URL")
-    def build_db_connection(cls, v: str | None) -> Any:
-        return "sqlite+aiosqlite://"
-
-
 @lru_cache
 def get_config():
     return Config()
