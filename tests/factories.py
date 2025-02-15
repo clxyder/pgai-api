@@ -1,4 +1,5 @@
 import factory
+from factory.alchemy import SESSION_PERSISTENCE_COMMIT, SESSION_PERSISTENCE_FLUSH
 from faker import Faker
 from faker.providers import misc
 
@@ -11,17 +12,22 @@ fake.add_provider(misc)
 class DbModelFactory(factory.alchemy.SQLAlchemyModelFactory):
     class Meta:
         abstract = True
-        sqlalchemy_session_persistence = "commit"
+        sqlalchemy_session_persistence = SESSION_PERSISTENCE_COMMIT
 
     # https://stackoverflow.com/a/76227997
     # https://github.com/FactoryBoy/factory_boy/issues/679
     @classmethod
-    async def _create(cls, model_class, *args, **kwargs):
-        instance = super()._create(model_class, *args, **kwargs)
-        async with cls._meta.sqlalchemy_session as session:
+    async def _save(cls, model_class, session, args, kwargs):
+        session_persistence = cls._meta.sqlalchemy_session_persistence
+
+        obj = model_class(*args, **kwargs)
+        session.add(obj)
+        if session_persistence == SESSION_PERSISTENCE_FLUSH:
+            await session.flush()
+        elif session_persistence == SESSION_PERSISTENCE_COMMIT:
             await session.commit()
-            await session.refresh(instance)
-        return instance
+        await session.refresh(obj)
+        return obj
 
 
 class UserFactory(DbModelFactory):
