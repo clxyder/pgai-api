@@ -4,7 +4,7 @@ from pathlib import Path
 from typing import Any
 
 from decouple import config
-from pydantic import Field, PostgresDsn, field_validator
+from pydantic import Field, PostgresDsn, ValidationInfo, field_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 BASE_DIR = Path.cwd()
@@ -53,52 +53,46 @@ dictConfig(
 
 
 class Config(BaseSettings):
-    VERSION: str = Field(default="v1", json_schema_extra=dict(env="VERSION"))
-    DEBUG: bool = Field(default=False, json_schema_extra=dict(env="DEBUG"))
+    VERSION: str = Field(default="v1")
+    DEBUG: bool = Field(default=False)
 
-    POSTGRES_USER: str = Field(default="", json_schema_extra=dict(env="POSTGRES_USER"))
-    POSTGRES_PASSWORD: str = Field(
-        default="", json_schema_extra=dict(env="POSTGRES_PASSWORD")
-    )
-    POSTGRES_HOST: str = Field(default="", json_schema_extra=dict(env="POSTGRES_HOST"))
-    POSTGRES_PORT: str = Field(default="", json_schema_extra=dict(env="POSTGRES_PORT"))
-    POSTGRES_DB: str = Field(default="", json_schema_extra=dict(env="POSTGRES_DB"))
-    OLLAMA_DOMAIN: str = Field(
-        default="localhost", json_schema_extra=dict(env="OLLAMA_DOMAIN")
-    )
-    OLLAMA_PORT: str = Field(default="11434", json_schema_extra=dict(env="OLLAMA_PORT"))
-    OLLAMA_GENERATION_MODEL: str = Field(
-        default="", json_schema_extra=dict(env="OLLAMA_GENERATION_MODEL")
-    )
-    OLLAMA_EMBEDDING_MODEL: str = Field(
-        default="", json_schema_extra=dict(env="OLLAMA_EMBEDDING_MODEL")
-    )
+    POSTGRES_USER: str = Field(default="postgres")
+    POSTGRES_PASSWORD: str
+    POSTGRES_HOST: str = Field(default="localhost")
+    POSTGRES_PORT: int = Field(default=5432)
+    POSTGRES_DB: str = Field(default="postgres")
+    OLLAMA_DOMAIN: str = Field(default="localhost")
+    OLLAMA_PORT: str = Field(default="11434")
+    OLLAMA_GENERATION_MODEL: str
+    OLLAMA_EMBEDDING_MODEL: str
 
-    DATABASE_URL: str | None = None
-    OLLAMA_HOST: str | None = None
+    DATABASE_URL: str = Field(default="")
+    OLLAMA_HOST: str = Field(default="")
 
     @field_validator("DATABASE_URL", mode="before")
-    def build_db_connection(cls, v: str | None, values: dict[str, Any]) -> Any:
+    @classmethod
+    def build_db_connection(cls, v: str | None, info: ValidationInfo) -> Any:
         if v:
             return v
 
         return str(
             PostgresDsn.build(
                 scheme="postgresql+asyncpg",
-                username=values.data.get("POSTGRES_USER"),
-                password=values.data.get("POSTGRES_PASSWORD"),
-                host=values.data.get("POSTGRES_HOST"),
-                port=int(values.data.get("POSTGRES_PORT")),
-                path=f"{values.data.get('POSTGRES_DB') or ''}",
+                username=info.data.get("POSTGRES_USER"),
+                password=info.data.get("POSTGRES_PASSWORD"),
+                host=info.data.get("POSTGRES_HOST"),
+                port=info.data.get("POSTGRES_PORT"),
+                path=info.data.get("POSTGRES_DB"),
             )
         )
 
     @field_validator("OLLAMA_HOST", mode="before")
-    def build_ollama_host(cls, v: str | None, values: dict[str, Any]) -> Any:
+    @classmethod
+    def build_ollama_host(cls, v: str | None, info: ValidationInfo) -> Any:
         if v:
             return v
 
-        return f"http://{values.data.get('OLLAMA_DOMAIN')}:{values.data.get('OLLAMA_PORT')}"
+        return f"http://{info.data.get('OLLAMA_DOMAIN')}:{info.data.get('OLLAMA_PORT')}"
 
     model_config = SettingsConfigDict(env_file=".env", extra="ignore")
 
