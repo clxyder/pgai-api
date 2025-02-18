@@ -3,10 +3,10 @@ import logging
 import ollama
 from fastapi import APIRouter, Depends
 
-from app.common.database import get_session
 from app.common.dependencies import is_valid
-from app.v1.logic import create_page_content, create_user, get_all_users, get_user
 from app.common.rag import render_from_template, retrieve_embeddings_for_page_query
+from app.common.types import Session
+from app.v1.logic import create_page_content, create_user, get_all_users, get_user
 from app.v1.schema import MessageSchema, PageSchema, Response, UserSchema
 from config import CONFIG
 
@@ -22,7 +22,7 @@ router = APIRouter()
     responses={"200": {"model": Response}},
     dependencies=[Depends(is_valid)],
 )
-async def get_all_users_handler(session=Depends(get_session)):
+async def get_all_users_handler(session: Session):
     logger.info("getting all users...")
     users = await get_all_users(session)
     return {"users": users}
@@ -35,7 +35,7 @@ async def get_all_users_handler(session=Depends(get_session)):
     responses={"200": {"model": Response}},
     dependencies=[Depends(is_valid)],
 )
-async def get_user_handler(user_id, session=Depends(get_session)):
+async def get_user_handler(user_id, session: Session):
     logger.info("getting user...")
     user = await get_user(session, user_id)
     return {"user": user}
@@ -48,7 +48,7 @@ async def get_user_handler(user_id, session=Depends(get_session)):
     responses={"200": {"model": Response}},
     dependencies=[Depends(is_valid)],
 )
-async def create_user_handler(user_payload: UserSchema, session=Depends(get_session)):
+async def create_user_handler(user_payload: UserSchema, session: Session):
     logger.info("creating user...")
     user = await create_user(session, user_payload)
     return {"user": user.uuid}
@@ -60,14 +60,14 @@ async def create_user_handler(user_payload: UserSchema, session=Depends(get_sess
     description="Create page endpoint description",
     responses={"200": {"model": Response}},
 )
-async def create_page_handler(page_payload: PageSchema, session=Depends(get_session)):
+async def create_page_handler(page_payload: PageSchema, session: Session):
     logger.info("creating page content...")
     page = await create_page_content(session, page_payload)
     return {"page": page.uuid}
 
 
 @router.post("/chat")
-async def make_chat(payload: MessageSchema, session=Depends(get_session)):
+async def make_chat(payload: MessageSchema, session: Session):
     logger.info("calling model: %s", CONFIG.OLLAMA_GENERATION_MODEL)
 
     similar_posts = await retrieve_embeddings_for_page_query(session, payload.message)
