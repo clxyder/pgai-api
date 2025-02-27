@@ -9,7 +9,7 @@ from testcontainers.postgres import PostgresContainer
 
 from app import create_app
 from app.common.database import Base
-from tests.factories import UserFactory
+from app.common.factories import PageFactory, UserFactory
 
 
 @pytest.fixture(scope="session")
@@ -93,3 +93,8 @@ def fixture_base_factory(test_session):
 @pytest_asyncio.fixture(name="user_factory")
 async def fixture_user_factory(base_factory):
     return base_factory(UserFactory)
+
+
+@pytest_asyncio.fixture(name="page_factory")
+async def fixture_page_factory(base_factory):
+    return base_factory(PageFactory)

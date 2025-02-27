@@ -63,3 +63,27 @@ async def create_page_content(session, page_payload: PageSchema):
         raise
 
     return page
+
+
+async def get_all_pages(session):
+    page_results = await session.execute(select(Page))
+    return page_results.scalars().all()
+
+
+async def get_page(session, page_id):
+    query = select(Page).where(Page.uuid == page_id)
+
+    try:
+        page_result = await session.execute(query)
+    except SQLAlchemyError as exc:
+        if isinstance(exc.orig, ValueError):
+            raise RequestValidationError("Invalid UUID provided") from exc
+        logger.exception("%s", exc)
+        raise
+
+    page = page_result.scalar_one_or_none()
+
+    if page is None:
+        raise HTTPException(404, f"page with id '{page_id}' not found")
+
+    return page

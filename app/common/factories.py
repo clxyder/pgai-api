@@ -3,7 +3,7 @@ from factory.alchemy import SESSION_PERSISTENCE_COMMIT, SESSION_PERSISTENCE_FLUS
 from faker import Faker
 from faker.providers import misc
 
-from app.common.models import User
+from app.common.models import Page, User
 
 fake = Faker()
 fake.add_provider(misc)
@@ -36,3 +36,11 @@ class UserFactory(DbModelFactory):
 
     name = factory.LazyFunction(lambda: fake.name())
     uuid = factory.LazyFunction(fake.uuid4)
+
+
+class PageFactory(DbModelFactory):
+    class Meta:
+        model = Page
+
+    title = factory.LazyFunction(lambda: fake.sentence())
+    content = factory.LazyFunction(lambda: "".join(fake.paragraphs()))

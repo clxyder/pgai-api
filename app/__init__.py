@@ -1,8 +1,10 @@
 import logging
 
-from fastapi import APIRouter, FastAPI
+from fastapi import APIRouter, FastAPI, Request
 from fastapi.exceptions import RequestValidationError
-from fastapi.responses import RedirectResponse
+from fastapi.responses import HTMLResponse, RedirectResponse
+from fastapi.staticfiles import StaticFiles
+from fastapi.templating import Jinja2Templates
 from starlette.exceptions import HTTPException as StarletteHTTPException
 
 from app.common.exception_handlers import (
@@ -16,10 +18,21 @@ logger = logging.getLogger(__name__)
 
 router = APIRouter()
 
+# Setup templates
+templates = Jinja2Templates(directory="app/templates")
+
+# Mount static files
+router.mount("/static", StaticFiles(directory="app/static"), name="static")
+
 
 @router.get("/", include_in_schema=False)
 def home():
     return RedirectResponse(url="/docs")
+
+
+@router.get("/pages/create", response_class=HTMLResponse, include_in_schema=False)
+async def render_page(request: Request):
+    return templates.TemplateResponse("page_form.html", {"request": request})
 
 
 def create_app():

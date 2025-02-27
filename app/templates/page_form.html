@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Create Page</title>
+    <!-- Tailwind and DaisyUI -->
+    <link href="https://cdn.jsdelivr.net/npm/daisyui@3.9.2/dist/full.css" rel="stylesheet" type="text/css" />
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Alpine.js -->
+    <script defer src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"></script>
+</head>
+<body class="min-h-screen bg-base-200 p-8">
+    <div class="max-w-3xl mx-auto">
+        <div class="card bg-base-100 shadow-xl">
+            <div class="card-body">
+                <h2 class="card-title text-2xl mb-6">Create New Page</h2>
+
+                <div x-data="{
+                    title: '',
+                    content: '',
+                    errors: {},
+                    loading: false,
+
+                    validateForm() {
+                        this.errors = {};
+
+                        if (!this.title.trim()) {
+                            this.errors.title = 'Title is required';
+                        } else if (this.title.length < 3) {
+                            this.errors.title = 'Title must be at least 3 characters';
+                        }
+
+                        if (!this.content.trim()) {
+                            this.errors.content = 'Content is required';
+                        } else if (this.content.length < 10) {
+                            this.errors.content = 'Content must be at least 10 characters';
+                        }
+
+                        return Object.keys(this.errors).length === 0;
+                    },
+
+                    async submitForm() {
+                        if (!this.validateForm()) {
+                            return;
+                        }
+
+                        this.loading = true;
+
+                        try {
+                            const response = await fetch('/v1/pages/', {
+                                method: 'POST',
+                                headers: {
+                                    'Content-Type': 'application/json',
+                                },
+                                body: JSON.stringify({
+                                    title: this.title,
+                                    content: this.content
+                                })
+                            });
+
+                            if (!response.ok) {
+                                throw new Error('Failed to save page');
+                            }
+
+                            // Clear form and show success message
+                            this.title = '';
+                            this.content = '';
+                            alert('Page saved successfully!');
+
+                        } catch (error) {
+                            console.error('Error:', error);
+                            alert('Failed to save page. Please try again.');
+                        } finally {
+                            this.loading = false;
+                        }
+                    }
+                }">
+                    <form @submit.prevent="submitForm">
+                        <!-- Title Input -->
+                        <div class="form-control w-full">
+                            <label class="label">
+                                <span class="label-text">Title</span>
+                            </label>
+                            <input
+                                type="text"
+                                x-model="title"
+                                placeholder="Enter page title"
+                                class="input input-bordered w-full"
+                                :class="{'input-error': errors.title}"
+                            >
+                            <label class="label" x-show="errors.title">
+                                <span class="label-text-alt text-error" x-text="errors.title"></span>
+                            </label>
+                        </div>
+
+                        <!-- Content Input -->
+                        <div class="form-control w-full mt-4">
+                            <label class="label">
+                                <span class="label-text">Content</span>
+                            </label>
+                            <textarea
+                                x-model="content"
+                                placeholder="Enter page content"
+                                class="textarea textarea-bordered h-32"
+                                :class="{'textarea-error': errors.content}"
+                            ></textarea>
+                            <label class="label" x-show="errors.content">
+                                <span class="label-text-alt text-error" x-text="errors.content"></span>
+                            </label>
+                        </div>
+
+                        <!-- Submit Button -->
+                        <div class="form-control mt-6">
+                            <button
+                                type="submit"
+                                class="btn btn-primary"
+                                :disabled="loading"
+                            >
+                                <span x-show="!loading">Save Page</span>
+                                <span x-show="loading" class="loading loading-spinner"></span>
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
