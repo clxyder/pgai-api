@@ -40,9 +40,9 @@ async def test_get_page(client, test_session):
     response = await client.get(f"{V1_ENDPOINT}/pages/{page.uuid}")
 
     assert response.status_code == HTTPStatus.OK
-    assert response.json()["page"]
-    assert response.json()["page"]["id"] == page.id
-    assert response.json()["page"]["title"] == page.title
+    assert response.json()
+    assert response.json()["id"] == page.id
+    assert response.json()["title"] == page.title
 
 
 @pytest.mark.usefixtures("dependency_overrides")
