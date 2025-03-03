@@ -21,9 +21,6 @@ router = APIRouter()
 # Setup templates
 templates = Jinja2Templates(directory="app/templates")
 
-# Mount static files
-router.mount("/static", StaticFiles(directory="app/static"), name="static")
-
 
 @router.get("/", include_in_schema=False)
 def home():
@@ -36,7 +33,7 @@ async def render_page(request: Request):
 
 
 def create_app():
-    app = FastAPI()
+    app = FastAPI(title="Gen AI LLM API", description="API for Gen AI LLM with Ollama")
 
     app.include_router(router)
 
@@ -46,11 +43,14 @@ def create_app():
     # latest router
     app.include_router(v1_router, prefix="/latest", tags=["latest"])
 
+    app.add_exception_handler(RequestValidationError, validation_exception_handler)
+    app.add_exception_handler(StarletteHTTPException, custom_http_exception_handler)
+    app.add_exception_handler(Exception, unhandled_exception_handler)
+
+    # Mount static files
+    app.mount("/static", StaticFiles(directory="app/static"), name="static")
+
     return app
 
 
 app = create_app()
-
-app.add_exception_handler(RequestValidationError, validation_exception_handler)
-app.add_exception_handler(StarletteHTTPException, custom_http_exception_handler)
-app.add_exception_handler(Exception, unhandled_exception_handler)

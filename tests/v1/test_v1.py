@@ -47,6 +47,27 @@ async def test_get_page(client, test_session):
 
 @pytest.mark.usefixtures("dependency_overrides")
 @pytest.mark.asyncio
+async def test_get_page_invalid_id(client):
+    # Test with a non-existent but valid UUID
+    invalid_page_id = "00000000-0000-0000-0000-000000000000"
+    response = await client.get(f"{V1_ENDPOINT}/pages/{invalid_page_id}")
+    # Depending on the implementation, it might return 404 or 422
+    assert response.status_code in (
+        HTTPStatus.NOT_FOUND,
+        HTTPStatus.UNPROCESSABLE_ENTITY,
+    )
+
+    # Test with an invalid format page_id
+    invalid_format_id = "invalid-id-format"
+    response = await client.get(f"{V1_ENDPOINT}/pages/{invalid_format_id}")
+    assert response.status_code in (
+        HTTPStatus.NOT_FOUND,
+        HTTPStatus.UNPROCESSABLE_ENTITY,
+    )
+
+
+@pytest.mark.usefixtures("dependency_overrides")
+@pytest.mark.asyncio
 async def test_create_page_content(client, test_session):
     payload = {"title": "testpage", "content": "test content"}
 
