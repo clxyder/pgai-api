@@ -33,5 +33,7 @@ jobs:
           POSTGRES_PASSWORD: "-"
           POSTGRES_HOST: "-"
           POSTGRES_DB: "-"
+          OLLAMA_GENERATION_MODEL: "-"
+          OLLAMA_EMBEDDING_MODEL: "-"
         run: |
           pytest -vv --junitxml=junit/test-results.xml
