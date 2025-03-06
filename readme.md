@@ -32,7 +32,7 @@ cp .env.example .env
 The following environment variables should be set in the `.env` file even if they do not 'exist', the docker postgres image will use them for setting up the container -
 `POSTGRES_USER`, `POSTGRES_PASSWORD`, `POSTGRES_DB`.
 
-`OLLAMA_GENERATION_MODEL` and `OLLAMA_EMBEDDING_MODEL` should be set to values that exist in the [Ollama Registry](https://ollama.com/library) for generation model and embedding model respectively.
+`OLLAMA_GENERATION_MODEL` and `OLLAMA_EMBEDDING_MODEL` should be set to values that exist in the [Ollama Registry](https://ollama.com/library) for generation model and embedding model respectively. For example, you can set `OLLAMA_GENERATION_MODEL` to `llama3.2:1b` and `OLLAMA_EMBEDDING_MODEL` to `nomic-embed-text`.
 
 
 ### Run application with Docker
