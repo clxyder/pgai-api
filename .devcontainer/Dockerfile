@@ -1,4 +1,4 @@
-ARG VARIANT=3.13-bookworm
+ARG VARIANT=3.12-bookworm
 FROM mcr.microsoft.com/devcontainers/python:1-${VARIANT}
 
 ENV PIP_TARGET=/usr/local/pip-global

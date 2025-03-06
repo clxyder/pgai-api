@@ -4,15 +4,14 @@ import pytest
 
 from app.common.database import get_session
 from app.common.dependencies import is_valid
-from app.v1.logic import create_user, get_all_users
-from app.v1.schema import UserSchema
-from tests.utilities import get_test_session
+from app.v1.logic import create_page_content, get_all_pages
+from app.v1.schema import PageSchema
 
 V1_ENDPOINT = "/v1"
 
 
 @pytest.fixture
-def dependency_overrides(application):
+def dependency_overrides(application, get_test_session):
     application.dependency_overrides[is_valid] = lambda: None
     application.dependency_overrides[get_session] = get_test_session
     yield application.dependency_overrides
@@ -21,41 +20,61 @@ def dependency_overrides(application):
 
 @pytest.mark.usefixtures("dependency_overrides")
 @pytest.mark.asyncio
-async def test_get_users(client, test_session):
-    user_schema = UserSchema(name="testuser")
-    user = await create_user(test_session, user_schema)
+async def test_get_pages(client, page_factory):
+    page = await page_factory(title="testpage")
 
-    response = client.get(f"{V1_ENDPOINT}/users")
+    response = await client.get(f"{V1_ENDPOINT}/pages")
 
     assert response.status_code == HTTPStatus.OK
-    assert response.json()["users"]
-    assert response.json()["users"][0]["id"] == user.id
-    assert response.json()["users"][0]["name"] == user.name
+    assert response.json()["pages"]
+    assert response.json()["pages"][0]["id"] == page.id
+    assert response.json()["pages"][0]["title"] == page.title
 
 
 @pytest.mark.usefixtures("dependency_overrides")
 @pytest.mark.asyncio
-async def test_get_user(client, test_session):
-    user_schema = UserSchema(name="testuser")
-    user = await create_user(test_session, user_schema)
+async def test_get_page(client, test_session):
+    page_schema = PageSchema(title="testpage", content="test content")
+    page = await create_page_content(test_session, page_schema)
 
-    response = client.get(f"{V1_ENDPOINT}/user/{user.uuid}")
+    response = await client.get(f"{V1_ENDPOINT}/pages/{page.uuid}")
 
     assert response.status_code == HTTPStatus.OK
-    assert response.json()["user"]
-    assert response.json()["user"]["id"] == user.id
-    assert response.json()["user"]["name"] == user.name
+    assert response.json()
+    assert response.json()["id"] == page.id
+    assert response.json()["title"] == page.title
 
 
 @pytest.mark.usefixtures("dependency_overrides")
 @pytest.mark.asyncio
-async def test_create_user(client, test_session):
-    payload = {"name": "testuser"}
+async def test_get_page_invalid_id(client):
+    # Test with a non-existent but valid UUID
+    invalid_page_id = "00000000-0000-0000-0000-000000000000"
+    response = await client.get(f"{V1_ENDPOINT}/pages/{invalid_page_id}")
+    # Depending on the implementation, it might return 404 or 422
+    assert response.status_code in (
+        HTTPStatus.NOT_FOUND,
+        HTTPStatus.UNPROCESSABLE_ENTITY,
+    )
 
-    response = client.post(f"{V1_ENDPOINT}/users", json=payload)
+    # Test with an invalid format page_id
+    invalid_format_id = "invalid-id-format"
+    response = await client.get(f"{V1_ENDPOINT}/pages/{invalid_format_id}")
+    assert response.status_code in (
+        HTTPStatus.NOT_FOUND,
+        HTTPStatus.UNPROCESSABLE_ENTITY,
+    )
 
-    users = await get_all_users(test_session)
+
+@pytest.mark.usefixtures("dependency_overrides")
+@pytest.mark.asyncio
+async def test_create_page_content(client, test_session):
+    payload = {"title": "testpage", "content": "test content"}
+
+    response = await client.post(f"{V1_ENDPOINT}/pages", json=payload)
+
+    pages = await get_all_pages(test_session)
 
     assert response.status_code == HTTPStatus.OK
-    assert response.json()["user"]
-    assert len(users) == 1
+    assert response.json()["page"]
+    assert len(pages) == 1

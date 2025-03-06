@@ -1,16 +1,17 @@
 from functools import lru_cache
 from logging.config import dictConfig
 from pathlib import Path
-from typing import Any, Dict, Union
+from typing import Any
 
 from decouple import config
-from pydantic import Field, PostgresDsn, field_validator
+from pydantic import Field, PostgresDsn, ValidationInfo, field_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
-BASEDIR = Path.cwd()
+BASE_DIR = Path.cwd()
 
 LOG_LEVEL = config("LOG_LEVEL", default="debug").upper()
-LOG_DIR = BASEDIR / "logs"
+LOG_DIR = BASE_DIR / "logs"
+PROMPT_TEMPLATES_DIR = BASE_DIR / "app/common/prompt_templates"
 
 
 dictConfig(
@@ -52,41 +53,48 @@ dictConfig(
 
 
 class Config(BaseSettings):
-    VERSION: str = Field(default="v1", json_schema_extra=dict(env="VERSION"))
-    DEBUG: bool = Field(default=False, json_schema_extra=dict(env="DEBUG"))
+    VERSION: str = Field(default="v1")
+    DEBUG: bool = Field(default=False)
 
-    POSTGRES_USER: str = Field(default="", json_schema_extra=dict(env="POSTGRES_USER"))
-    POSTGRES_PASSWORD: str = Field(
-        default="", json_schema_extra=dict(env="POSTGRES_PASSWORD")
-    )
-    POSTGRES_HOST: str = Field(default="", json_schema_extra=dict(env="POSTGRES_HOST"))
-    POSTGRES_PORT: str = Field(default="", json_schema_extra=dict(env="POSTGRES_PORT"))
-    POSTGRES_DB: str = Field(default="", json_schema_extra=dict(env="POSTGRES_DB"))
-    DATABASE_URL: Union[str, None] = None
+    POSTGRES_USER: str = Field(default="postgres")
+    POSTGRES_PASSWORD: str
+    POSTGRES_HOST: str = Field(default="localhost")
+    POSTGRES_PORT: int = Field(default=5432)
+    POSTGRES_DB: str = Field(default="postgres")
+    OLLAMA_DOMAIN: str = Field(default="localhost")
+    OLLAMA_PORT: str = Field(default="11434")
+    OLLAMA_GENERATION_MODEL: str
+    OLLAMA_EMBEDDING_MODEL: str
+
+    DATABASE_URL: str = Field(default="")
+    OLLAMA_HOST: str = Field(default="")
 
     @field_validator("DATABASE_URL", mode="before")
-    def build_db_connection(cls, v: Union[str, None], values: Dict[str, Any]) -> Any:
+    @classmethod
+    def build_db_connection(cls, v: str | None, info: ValidationInfo) -> Any:
         if v:
             return v
 
         return str(
             PostgresDsn.build(
                 scheme="postgresql+asyncpg",
-                username=values.data.get("POSTGRES_USER"),
-                password=values.data.get("POSTGRES_PASSWORD"),
-                host=values.data.get("POSTGRES_HOST"),
-                port=int(values.data.get("POSTGRES_PORT")),
-                path=f"{values.data.get('POSTGRES_DB') or ''}",
+                username=info.data.get("POSTGRES_USER"),
+                password=info.data.get("POSTGRES_PASSWORD"),
+                host=info.data.get("POSTGRES_HOST"),
+                port=info.data.get("POSTGRES_PORT"),
+                path=info.data.get("POSTGRES_DB"),
             )
         )
 
-    model_config = SettingsConfigDict(env_file=".env")
+    @field_validator("OLLAMA_HOST", mode="before")
+    @classmethod
+    def build_ollama_host(cls, v: str | None, info: ValidationInfo) -> Any:
+        if v:
+            return v
 
+        return f"http://{info.data.get('OLLAMA_DOMAIN')}:{info.data.get('OLLAMA_PORT')}"
 
-class TestingConfig(Config):
-    @field_validator("DATABASE_URL")
-    def build_db_connection(cls, v: Union[str, None]) -> Any:
-        return "sqlite+aiosqlite://"
+    model_config = SettingsConfigDict(env_file=".env", extra="ignore")
 
 
 @lru_cache
@@ -94,10 +102,4 @@ def get_config():
     return Config()
 
 
-@lru_cache
-def get_testing_config():
-    return TestingConfig()
-
-
 CONFIG = get_config()
-TESTING_CONFIG = get_testing_config()

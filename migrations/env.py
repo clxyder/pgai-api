@@ -2,12 +2,15 @@ import asyncio
 from logging.config import fileConfig
 
 from alembic import context
+from pgai.alembic import register_operations
 from sqlalchemy import pool
 from sqlalchemy.engine import Connection
 from sqlalchemy.ext.asyncio import async_engine_from_config
 
-from app.common import models
+from app.common.database import Base
 from config import CONFIG
+
+register_operations()
 
 # this is the Alembic Config object, which provides
 # access to the values within the .ini file in use.
@@ -24,12 +27,19 @@ if config.config_file_name is not None:
 # for 'autogenerate' support
 # from myapp import mymodel
 # target_metadata = mymodel.Base.metadata
-target_metadata = models.Base.metadata
+target_metadata = Base.metadata
 
 # other values from the config, defined by the needs of env.py,
 # can be acquired:
 # my_important_option = config.get_main_option("my_important_option")
 # ... etc.
+
+
+# https://github.com/timescale/pgai/blob/main/docs/python-integration.md#working-with-alembic
+def include_object(object, name, type_, reflected, compare_to):
+    return type_ != "table" or name not in target_metadata.info.get(
+        "pgai_managed_tables", set()
+    )
 
 
 def run_migrations_offline() -> None:
@@ -50,6 +60,7 @@ def run_migrations_offline() -> None:
         target_metadata=target_metadata,
         literal_binds=True,
         dialect_opts={"paramstyle": "named"},
+        include_object=include_object,
     )
 
     with context.begin_transaction():
@@ -57,7 +68,11 @@ def run_migrations_offline() -> None:
 
 
 def do_run_migrations(connection: Connection) -> None:
-    context.configure(connection=connection, target_metadata=target_metadata)
+    context.configure(
+        connection=connection,
+        target_metadata=target_metadata,
+        include_object=include_object,
+    )
 
     with context.begin_transaction():
         context.run_migrations()

@@ -1,16 +1,23 @@
-from datetime import datetime
-from uuid import uuid4
+from pgai.sqlalchemy import vectorizer_relationship
+from sqlalchemy import String
+from sqlalchemy.orm import Mapped, mapped_column
 
-from sqlalchemy import Column, DateTime, Integer, String
-from sqlalchemy_utils import UUIDType
-
-from app.common.database import Base
+from app.common.database import BaseDbModel
 
 
-class User(Base):
+class User(BaseDbModel):
     __tablename__ = "users"
 
-    id = Column(Integer, primary_key=True)
-    uuid = Column(UUIDType(), unique=True, index=True, nullable=False, default=uuid4)
-    name = Column(String(50))
-    created_at = Column(DateTime, default=datetime.utcnow)
+    name: Mapped[str] = mapped_column(String(50))
+
+
+class Page(BaseDbModel):
+    __tablename__ = "pages"
+
+    title: Mapped[str]
+    content: Mapped[str]
+
+    # Add vector embeddings for the content field
+    content_embeddings = vectorizer_relationship(
+        dimensions=768, target_table="pages_embeddings"
+    )

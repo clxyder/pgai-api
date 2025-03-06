@@ -1,8 +1,11 @@
-FROM python:3.13-slim-bookworm
+FROM python:3.12-slim-bookworm
 
 ENV LANG=C.UTF-8
 
 ENV APP_DIR=/usr/src/app
+
+RUN apt-get update -y \
+    && apt-get install libpq-dev gcc -y
 
 # Create a directory for application
 RUN mkdir -p ${APP_DIR}
