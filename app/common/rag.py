@@ -23,9 +23,11 @@ async def retrieve_embeddings_for_page_query(
 
 
 def render_from_template(template_file: str, context) -> str:
-    template_path = str(PROMPT_TEMPLATES_DIR / template_file)
+    template_path = PROMPT_TEMPLATES_DIR / template_file
+    if not template_path.exists():
+        raise ValueError(f"Template not found: {template_path}")
     env = Environment(
         loader=FileSystemLoader(str(PROMPT_TEMPLATES_DIR)), autoescape=True
     )
-    template = env.get_template(template_path)
+    template = env.get_template(template_file)
     return template.render(context)
