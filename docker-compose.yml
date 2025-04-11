@@ -36,6 +36,7 @@ services:
     env_file:
       - .env
     restart: always
+    image: pgai-api:latest
     build:
       context: ./
       dockerfile: Dockerfile
