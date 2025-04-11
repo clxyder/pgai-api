@@ -1,3 +1,8 @@
+
+# Variables
+DOCKER_COMPOSE_FILE := docker-compose.yml
+COMPOSE=docker compose -f $(DOCKER_COMPOSE_FILE)
+
 .PHONY: install
 install:
 	pip install -r requirements-dev.txt && pre-commit install;
@@ -20,15 +25,15 @@ test:
 
 .PHONY: docker-up
 docker-up:
-	docker-compose up --build;
+	$(COMPOSE) up --build;
 
 .PHONY: docker-up-detached
 docker-up-detached: ## Bring up environment in Docker detached mode
-	docker-compose up --build -d;
+	$(COMPOSE) up --build -d;
 
 .PHONY: docker-db-upgrade
 docker-db-upgrade:
-	docker-compose exec fastapi_service alembic upgrade head;
+	$(COMPOSE) exec fastapi alembic upgrade head;
 
 .PHONY: docker-run
 docker-run: docker-up-detached docker-db-upgrade
