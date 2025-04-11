@@ -1,6 +1,5 @@
 services:
-  db_service:
-    container_name: db_container
+  db:
     env_file:
       - .env
     image: timescale/timescaledb-ha:pg17
@@ -10,7 +9,7 @@ services:
       - ./.docker/postgres:/docker-entrypoint-initdb.d
     ports:
       - "${POSTGRES_PORT}:${POSTGRES_PORT}"
-    command: [ "-p", "${POSTGRES_PORT}", "-c", "ai.ollama_host=http://ollama_container:11434" ]
+    command: [ "-p", "${POSTGRES_PORT}", "-c", "ai.ollama_host=http://ollama:11434" ]
     expose:
       - "${POSTGRES_PORT}"
     healthcheck:
@@ -18,22 +17,22 @@ services:
       interval: 10s
       timeout: 5s
       retries: 5
-  vectorizer_worker_service:
-    container_name: vectorizer_worker_container
+
+  vectorizer_worker:
     image: timescale/pgai-vectorizer-worker:latest
     env_file:
       - .env
     environment:
-      PGAI_VECTORIZER_WORKER_DB_URL: postgres://${POSTGRES_USER}:${POSTGRES_PASSWORD}@db_container:${POSTGRES_PORT}/${POSTGRES_DB}
-      OLLAMA_HOST: http://ollama_container:11434
+      PGAI_VECTORIZER_WORKER_DB_URL: postgres://${POSTGRES_USER}:${POSTGRES_PASSWORD}@db:${POSTGRES_PORT}/${POSTGRES_DB}
+      OLLAMA_HOST: http://ollama:11434
     command: [ "--poll-interval", "5s", "--log-level", "DEBUG" ]
     depends_on:
-      db_service:
+      db:
         condition: service_healthy
-      ollama_service:
+      ollama:
         condition: service_healthy
-  fastapi_service:
-    container_name: fastapi_container
+
+  fastapi:
     env_file:
       - .env
     restart: always
@@ -45,41 +44,39 @@ services:
     volumes:
       - ./:/usr/src/app
     depends_on:
-      db_service:
+      db:
         condition: service_healthy
-      ollama_service:
+      ollama:
         condition: service_healthy
     environment:
-      - POSTGRES_HOST=db_container
-      - OLLAMA_HOST=http://ollama_container:11434
+      - POSTGRES_HOST=db
+      - OLLAMA_HOST=http://ollama:11434
     stdin_open: true
     tty: true
-  ollama_service:
-    container_name: ollama_container
-    build:
-      context: ./.docker/ollama
+
+  ollama:
+    image: ollama/ollama:0.6.5
     ports:
       - "11434:11434"
     healthcheck:
-      test: ["CMD-SHELL", "curl -f http://localhost:11434"]
+      test: ["CMD-SHELL", "ollama ps"]
       interval: 10s
       timeout: 5s
       retries: 5
     volumes:
       - ollama_data:/root/.ollama
 
-  ollama_model_puller_service:
-    container_name: ollama_model_puller_container
-    image: ollama/ollama:latest
+  ollama_model_puller:
+    image: ollama/ollama:0.6.5
     env_file:
       - .env
     depends_on:
-      ollama_service:
+      ollama:
         condition: service_healthy
     entrypoint: ["/bin/bash","-c"]
     command: ["ollama pull ${OLLAMA_GENERATION_MODEL} && ollama pull ${OLLAMA_EMBEDDING_MODEL}"]
     environment:
-      - OLLAMA_HOST=http://ollama_container:11434
+      - OLLAMA_HOST=http://ollama:11434
     volumes:
       - ollama_data:/root/.ollama
 
