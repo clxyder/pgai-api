@@ -4,20 +4,18 @@ from logging.config import fileConfig
 from alembic import context
 from alembic.operations import Operations
 
-from pgai.alembic import register_operations
+from pgai.alembic import register_operations as pgai_register_operations
 from sqlalchemy import pool
 from sqlalchemy.engine import Connection
 from sqlalchemy.ext.asyncio import async_engine_from_config
 
 from app.common.database import Base
 from config import CONFIG
-from pg_extension import PGExtension
+from pg_extension import register_operations as pg_ext_register_operations
 
 
-register_operations()
-
-
-
+pgai_register_operations()
+pg_ext_register_operations()
 
 # this is the Alembic Config object, which provides
 # access to the values within the .ini file in use.
@@ -47,17 +45,6 @@ def include_object(object, name, type_, reflected, compare_to):
     return type_ != "table" or name not in target_metadata.info.get(
         "pgai_managed_tables", set()
     )
-
-def create_extension_operation(extension_name, schema=None, version=None, if_not_exists=True, cascade=False):
-    return PGExtension(extension_name, schema, version, if_not_exists, cascade)
-
-# Register the operation with Alembic
-Operations.register_operation(
-    'create_extension', 
-    PGExtension.create_extension,
-)
-Operations.implementation_for('create_extension') = lambda cls, **kwargs: PGExtension(**kwargs)
-
 
 def run_migrations_offline() -> None:
     """Run migrations in 'offline' mode.
