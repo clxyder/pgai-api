@@ -5,7 +5,7 @@ COMPOSE=docker compose -f $(DOCKER_COMPOSE_FILE)
 
 .PHONY: install
 install:
-	pip install -r requirements-dev.txt && pre-commit install;
+	uv sync && pre-commit install;
 
 .PHONY: db-migrate
 db-migrate:

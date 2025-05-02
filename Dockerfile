@@ -19,8 +19,10 @@ RUN useradd --create-home appusr
 WORKDIR ${APP_DIR}
 
 # Install requirements
-COPY requirements.txt ${APP_DIR}
-RUN pip install -r requirements.txt
+ENV UV_PROJECT_ENVIRONMENT="/usr/local/"
+COPY pyproject.toml uv.lock ${APP_DIR}
+RUN pip install uv && \
+    uv sync --no-dev --locked
 
 RUN chown -R appusr:appusr ${APP_DIR}
 USER appusr

@@ -3,6 +3,7 @@
 API (Fastapi application) to explore Generative AI and Large Language Models using Ollama.
 
 ## Features
+
 - Retrieval Augmented Generation (RAG)
 
 ## Requirements
@@ -33,7 +34,6 @@ The following environment variables should be set in the `.env` file even if the
 `POSTGRES_USER`, `POSTGRES_PASSWORD`, `POSTGRES_DB`.
 
 `OLLAMA_GENERATION_MODEL` and `OLLAMA_EMBEDDING_MODEL` should be set to values that exist in the [Ollama Registry](https://ollama.com/library) for generation model and embedding model respectively. For example, you can set `OLLAMA_GENERATION_MODEL` to `llama3.2:1b` and `OLLAMA_EMBEDDING_MODEL` to `nomic-embed-text`.
-
 
 ### Run application with Docker
 
@@ -95,7 +95,6 @@ OpenAPI documentation page should also be available at `http://localhost:8000/do
 To test the RAG implementation, create new page content by navigating to `/pages/create` in the browser or send a `POST` request to the API endpoint `/v1/pages`.
 
 After creating page content, test the chat with the AI model by sending a `POST` HTTP request to the `/v1/chat` endpoint and ask questions about the created content.
-
 
 ### Tests
 

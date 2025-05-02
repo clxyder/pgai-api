@@ -39,6 +39,6 @@
       "onAutoForward": "notify"
     }
   },
-  "postCreateCommand": "pip3 install -r requirements-dev.txt",
+  "postCreateCommand": "pip3 install uv && uv sync",
   "remoteUser": "vscode"
 }
