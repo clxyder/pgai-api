@@ -4,8 +4,11 @@ ENV LANG=C.UTF-8
 
 ENV APP_DIR=/usr/src/app
 
-RUN apt-get update -y \
-    && apt-get install libpq-dev gcc -y
+RUN apt-get update -y && \
+    apt-get install libpq-dev gcc -y && \
+    apt-get autoremove -y && \
+    apt-get clean && \
+    rm -rf /var/lib/apt/lists/*
 
 # Create a directory for application
 RUN mkdir -p ${APP_DIR}
@@ -17,7 +20,7 @@ WORKDIR ${APP_DIR}
 
 # Install requirements
 COPY requirements.txt ${APP_DIR}
-RUN pip install --upgrade pip && pip install -r requirements.txt
+RUN pip install -r requirements.txt
 
 RUN chown -R appusr:appusr ${APP_DIR}
 USER appusr
