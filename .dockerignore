@@ -1,7 +1,10 @@
-.env
+.env*
 *.pytest_cache*
 *.pycache*
 __pycache__/
 *.py[cod]
 *$py.class
 .vscode
+.docker
+.github
+.venv
