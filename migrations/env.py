@@ -10,8 +10,8 @@ from sqlalchemy.engine import Connection
 from sqlalchemy.ext.asyncio import async_engine_from_config
 
 from app.common.database import Base
+from app.common.pg_extension import register_operations as pg_ext_register_operations
 from config import CONFIG
-from pg_extension import register_operations as pg_ext_register_operations
 
 
 pgai_register_operations()

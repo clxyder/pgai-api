@@ -10,9 +10,9 @@ class PgExtensionOp(MigrateOperation):
     """Base PgExtensionOp for Create and Drop statements.
     """
 
-    def __init__(self, schema: str, signature: str, version: str = None, if_not_exists=True, cascade=False):
-        self.schema: str = schema
+    def __init__(self, signature: str, schema: str, version: str = None, if_not_exists=True, cascade=False):
         self.signature: str = signature
+        self.schema: str = schema
         self.version: str = version
         self.if_not_exists = if_not_exists
         self.cascade = cascade
