@@ -41,7 +41,7 @@ It is advisable to run the entire application with Docker to ensure all componen
 
 **Note**: Make sure system to run application has adequate resources e.g. CPU, GPU to run the models.
 
-To run the application with GPU support, install NVIDIA container toolkit from here: https://hub.docker.com/r/ollama/ollama
+To run the application with GPU support, install NVIDIA container toolkit from here: [Docker Hub - ollama/ollama](https://hub.docker.com/r/ollama/ollama)
 
 Also update the `docker-compose.yml` file, `ollama_service` section with:
 
