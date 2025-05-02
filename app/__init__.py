@@ -6,6 +6,7 @@ from fastapi.responses import HTMLResponse, RedirectResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 from starlette.exceptions import HTTPException as StarletteHTTPException
+from pgai import install
 
 from app.common.exception_handlers import (
     custom_http_exception_handler,
@@ -13,10 +14,14 @@ from app.common.exception_handlers import (
     validation_exception_handler,
 )
 from app.v1.routes import router as v1_router
+from config import CONFIG
 
 logger = logging.getLogger(__name__)
 
 router = APIRouter()
+
+# install pgai into database
+install(db_url=CONFIG.PGAI_DATABASE_URL)
 
 # Setup templates
 templates = Jinja2Templates(directory="app/templates")

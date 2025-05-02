@@ -67,6 +67,7 @@ class Config(BaseSettings):
     OLLAMA_EMBEDDING_MODEL: str
 
     DATABASE_URL: str = Field(default="")
+    PGAI_DATABASE_URL: str = Field(default="")
     OLLAMA_HOST: str = Field(default="")
 
     @field_validator("DATABASE_URL", mode="before")
@@ -85,6 +86,25 @@ class Config(BaseSettings):
                 path=info.data.get("POSTGRES_DB"),
             )
         )
+    
+    @field_validator("PGAI_DATABASE_URL", mode="before")
+    @classmethod
+    def build_pgai_db_connection(cls, v: str | None, info: ValidationInfo) -> Any:
+        if v:
+            return v
+
+        return str(
+            PostgresDsn.build(
+                scheme="postgres",
+                username=info.data.get("POSTGRES_USER"),
+                password=info.data.get("POSTGRES_PASSWORD"),
+                host=info.data.get("POSTGRES_HOST"),
+                port=info.data.get("POSTGRES_PORT"),
+                path=info.data.get("POSTGRES_DB"),
+            )
+        )
+    
+    
 
     @field_validator("OLLAMA_HOST", mode="before")
     @classmethod

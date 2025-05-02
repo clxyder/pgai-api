@@ -12,6 +12,8 @@ from pgai.vectorizer.configuration import (
     EmbeddingOllamaConfig,
     ChunkingCharacterTextSplitterConfig,
     FormattingPythonTemplateConfig,
+    LoadingColumnConfig,
+    DestinationTableConfig,
 )
 
 
@@ -25,12 +27,18 @@ depends_on = None
 def upgrade() -> None:
     op.create_vectorizer(
         source="pages",
-        target_table="pages_embeddings",
+        name="pages_content_embedder",
+        destination=DestinationTableConfig(
+            destination='pages_embeddings',
+        ),
+        loading=LoadingColumnConfig(
+            column_name='content',
+        ),
         embedding=EmbeddingOllamaConfig(
-            model=CONFIG.OLLAMA_EMBEDDING_MODEL, dimensions=768
+            model=CONFIG.OLLAMA_EMBEDDING_MODEL,
+            dimensions=768,
         ),
         chunking=ChunkingCharacterTextSplitterConfig(
-            chunk_column="content",
             chunk_size=800,
             chunk_overlap=400,
             separator=".",
@@ -41,4 +49,7 @@ def upgrade() -> None:
 
 
 def downgrade() -> None:
-    op.drop_vectorizer(target_table="pages_embeddings", drop_all=True)
+    op.drop_vectorizer(
+        name="pages_content_embedder",
+        drop_all=True,
+    )
